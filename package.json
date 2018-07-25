@@ -1,0 +1,26 @@
+{
+    "name": "api-connector",
+    "version": "0.0.0",
+    "description": "Axios wrapper that simplifies js API SDK development.",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iliyasappazov/api-connector.git"
+    },
+    "keywords": [
+        "axios",
+        "api"
+    ],
+    "author": {
+        "name": "Iliyas Appazov",
+        "email": "iliyasappazov@gmail.com"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/iliyasappazov/api-connector/issues"
+    },
+    "homepage": "https://github.com/iliyasappazov/api-connector#readme",
+    "dependencies": {
+        "axios": "^0.18.0"
+    }
+}
