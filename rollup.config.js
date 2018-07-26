@@ -2,7 +2,7 @@ import babel from "rollup-plugin-babel";
 import {uglify} from "rollup-plugin-uglify";
 
 export default {
-    input: "lib/apiConnector.js",
+    input: "lib/index.js",
     output: {
         file: "dist/api-connector.js",
         format: "cjs",
