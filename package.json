@@ -1,10 +1,10 @@
 {
     "name": "api-connector",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "description": "Axios wrapper that simplifies js API SDK development.",
     "main": "dist/api-connector.js",
     "scripts": {
-        "build": "set BABEL_ENV=production && rollup -c"
+        "prepublish": "set BABEL_ENV=production && rollup -c"
     },
     "files": [
         "dist/api-connector.js",

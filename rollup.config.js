@@ -7,7 +7,6 @@ export default {
         file: "dist/api-connector.js",
         format: "cjs",
         exports: "named",
-        sourceMap: "inline"
     },
     plugins: [
         babel({
@@ -16,7 +15,6 @@ export default {
                 "es2015-rollup"
             ],
             plugins: ["transform-object-rest-spread"],
-            comments: false,
             runtimeHelpers: true
         }),
         uglify(),
