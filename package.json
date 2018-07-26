@@ -1,8 +1,14 @@
 {
     "name": "api-connector",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "Axios wrapper that simplifies js API SDK development.",
-    "main": "index.js",
+    "main": "dist/api-connector.js",
+    "scripts": {
+        "build": "set BABEL_ENV=production && rollup -c"
+    },
+    "files": [
+        "dist/api-connector.js"
+    ],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/iliyasappazov/api-connector.git"
@@ -22,5 +28,14 @@
     "homepage": "https://github.com/iliyasappazov/api-connector#readme",
     "dependencies": {
         "axios": "^0.18.0"
+    },
+    "devDependencies": {
+        "babel-cli": "^6.26.0",
+        "babel-core": "^6.26.3",
+        "babel-preset-es2015-rollup": "^3.0.0",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "rollup": "^0.63.4",
+        "rollup-plugin-babel": "^3.0.7",
+        "rollup-plugin-uglify": "^4.0.0"
     }
 }
