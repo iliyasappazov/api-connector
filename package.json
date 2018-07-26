@@ -1,6 +1,6 @@
 {
     "name": "api-connector",
-    "version": "0.1.10",
+    "version": "0.1.11",
     "description": "Axios wrapper that simplifies js API SDK development.",
     "main": "dist/api-connector.js",
     "scripts": {
