@@ -1,4 +1,4 @@
-import {AxiosResponse, Canceler, AxiosStatic as Axios, AxiosRequestConfig} from "axios/index.d.ts";
+import {AxiosResponse, Canceler, AxiosRequestConfig, AxiosInstance} from "axios/index.d.ts";
 
 /**
  * Function that decides whether response is *successful* or *failed*,
@@ -49,12 +49,12 @@ interface ApiRequest {
      * Axios response object will be passed to the function, and if `true` is returned the response is said to be *successful*.
      * If the function is `null` any response will be considered as *successful*.
      *
-     * @param {Axios} axios - Axios instance
+     * @param {AxiosInstance} axios - Axios instance
      * @param {PendingRequestsDict} pendingRequests  - dictionary with pending request cancel functions
      * @param {ValidateResponseFunc} validateFunc - function that decides whether a response is *successful* or *failed*
      * @param {AxiosRequestConfig} configs  - Axios configs
      */
-    (axios: Axios, pendingRequests: PendingRequestsDict, validateFunc: ValidateResponseFunc, configs: AxiosRequestConfig): ApiRequest;
+    (axios: AxiosInstance, pendingRequests: PendingRequestsDict, validateFunc: ValidateResponseFunc, configs: AxiosRequestConfig): ApiRequest;
 
     /**
      * Attaches callback to all given events.
@@ -156,18 +156,67 @@ export interface ApiConnector {
     (validateFunc?: ValidateResponseFunc, configs?: AxiosRequestConfig): ApiConnector;
 
     validateFunc: ValidateResponseFunc;
-    axios: Axios;
+    axios: AxiosInstance;
 
-    apiGet(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    /**
+     * Creates GET request.
+     *
+     * @param {string} url - API endpoint url
+     * @param {{}} params - request uri parameters
+     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @returns {ApiRequest} request promise
+     */
+    reqGet(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
 
-    apiPost(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    /**
+     * Creates POST request.
+     *
+     * @param {string} url - API endpoint url
+     * @param {{}} data - request body data
+     * @param {{}} params - request uri parameters
+     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @returns {ApiRequest} request promise
+     */
+    reqPost(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
 
-    apiPatch(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    /**
+     * Creates PATCH request.
+     *
+     * @param {string} url - API endpoint url
+     * @param {{}} data - request body data
+     * @param {{}} params - request uri parameters
+     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @returns {ApiRequest} request promise
+     */
+    reqPatch(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
 
-    apiPut(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    /**
+     * Creates PUT request.
+     *
+     * @param {string} url - API endpoint url
+     * @param {{}} data - request body data
+     * @param {{}} params - request uri parameters
+     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @returns {ApiRequest} request promise
+     */
+    reqPut(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
 
-    apiDelete(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    /**
+     * Creates DELETE request.
+     *
+     * @param {string} url - API endpoint url
+     * @param {{}} params - request uri parameters
+     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @returns {ApiRequest} request promise
+     */
+    reqDelete(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
 
+    /**
+     * Creates ApiRequest
+     *
+     * @param {AxiosRequestConfig} configs - Axios configs
+     * @returns {ApiRequest} request promise
+     */
     request(configs?: AxiosRequestConfig): ApiRequest;
 }
 
