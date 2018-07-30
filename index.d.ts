@@ -153,7 +153,7 @@ interface ApiRequest {
 }
 
 export interface ApiConnector {
-    (validateFunc?: ValidateResponseFunc, configs?: AxiosRequestConfig): ApiConnector;
+    (configs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
 
     validateFunc: ValidateResponseFunc;
     axios: AxiosInstance;
@@ -221,7 +221,7 @@ export interface ApiConnector {
 }
 
 interface ApiConnectorStatic extends ApiConnector {
-    create(validateFunc?: ValidateResponseFunc, configs?: AxiosRequestConfig): ApiConnector;
+    create(configs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
 }
 
 declare const Default: ApiConnectorStatic;
