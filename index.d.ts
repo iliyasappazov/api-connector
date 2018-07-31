@@ -1,4 +1,4 @@
-import {AxiosResponse, Canceler, AxiosRequestConfig, AxiosInstance} from "axios/index.d.ts";
+import {AxiosResponse, Canceler, AxiosRequestConfig, AxiosInstance} from "axios";
 
 /**
  * Function that decides whether response is *successful* or *failed*,

@@ -5,9 +5,9 @@
  * @return {Promise} promise that will be returned on
  */
 export function testRequest(request) {
-    return new Promise((resolve, reject) => {
-        request.then(resolve).start();
-    });
+  return new Promise((resolve) => {
+    request.then(resolve).start();
+  });
 }
 
 /**
@@ -17,7 +17,7 @@ export function testRequest(request) {
  * @return {Promise} promise that will be returned on
  */
 export function testRequestSingle(request) {
-    return new Promise((resolve, reject) => {
-        request.then(resolve).startSingle();
-    });
+  return new Promise((resolve) => {
+    request.then(resolve).startSingle();
+  });
 }

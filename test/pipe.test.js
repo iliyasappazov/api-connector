@@ -1,18 +1,17 @@
-import {createServer, port} from "./_server";
-import {Pipe} from "../lib/utils";
-import test from "ava"
+import test from 'ava';
+import { Pipe } from '../lib/utils';
 
-test("piped callbacks are called sequentially", t => {
-    const response = {
-        data: {
-            inner: "value"
-        }
-    };
+test('piped callbacks are called sequentially', (t) => {
+  const initialResponse = {
+    data: {
+      inner: 'value',
+    },
+  };
 
-    const pipe = new Pipe();
-    pipe.join(response => response.data);
-    pipe.join(data => data.inner);
-    pipe.join(inner => t.is(inner, "value"));
+  const pipe = new Pipe();
+  pipe.join(response => response.data);
+  pipe.join(data => data.inner);
+  pipe.join(inner => t.is(inner, 'value'));
 
-    pipe.process(response);
+  pipe.process(initialResponse);
 });
