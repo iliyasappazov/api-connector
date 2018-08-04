@@ -12,3 +12,7 @@ npm-debug.log*
 
 # Dist
 dist
+
+# Coverage
+.nyc_output
+coverage

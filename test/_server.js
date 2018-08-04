@@ -1,27 +1,46 @@
 import http from 'http';
 import url from 'url';
+import net from 'net';
 
-export const port = 8080;
+export function getFreePort() {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.listen(() => {
+      const { port } = server.address();
+      server.close(() => resolve(port));
+    });
+  });
+}
 
 /**
  * Creates an http server.
  * Server simply returns request info in the following format: `{url, method, params, data}`.
  * If `status` url parameter is given - its value will be used as response status code.
  *
- * @return {http.Server | module:http2.Http2Server}
+ * @param {number} port
+ * @return {http.Server}
  */
-export function createServer() {
+export function createServer(port) {
   const server = http.createServer((req, res) => {
     const response = {
       url: req.url,
       method: req.method,
       params: url.parse(req.url, true).query,
     };
-    req.on('data', (data) => {
-      response.data = data;
+    let body = [];
+    req.on('data', (chunk) => {
+      body.push(chunk);
     });
 
     req.on('end', () => {
+      if (body.length > 0) {
+        body = Buffer.concat(body).toString();
+        try {
+          response.data = JSON.parse(body);
+        } catch (e) {
+          response.data = body;
+        }
+      }
       res.writeHead(response.params.status || 200);
       res.write(JSON.stringify(response));
       res.end();

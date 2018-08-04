@@ -1,11 +1,13 @@
 import test from 'ava';
-import { createServer, port } from './_server';
+import { createServer, getFreePort } from './_server';
 import ApiConn from '../lib/index';
 import { testRequest } from './_common';
 
 let server = null;
-test.before(() => {
-  server = createServer();
+let port = 0;
+test.before(async () => {
+  port = await getFreePort();
+  server = createServer(port);
 });
 
 test.after.always('cleanup', () => {
@@ -17,7 +19,7 @@ test('configs are passed to wrapped Axios instance', async (t) => {
   await testRequest(
     api.reqGet('/any')
       .onOk(() => t.pass())
-      .onAnyError(() => t.fail()),
+      .onAnyError(err => t.fail(err)),
   );
 });
 
@@ -26,7 +28,7 @@ test('by default all responses are `successful`', async (t) => {
   await testRequest(
     api.reqGet('/any')
       .onOk(() => t.pass())
-      .onAnyError(() => t.fail()),
+      .onAnyError(err => t.fail(err)),
   );
 });
 
