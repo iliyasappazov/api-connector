@@ -15,11 +15,11 @@ interface ValidateResponseFunc {
  *
  * @example
  * {
-         *      someHashString: {
-         *          1520000000: cancelFunction
-         *          1520000001: cancelFunction
-         *      }
-         * }
+ *      someHashString: {
+ *          1520000000: cancelFunction
+ *          1520000001: cancelFunction
+ *      }
+ * }
  */
 interface PendingRequestsDict {
     [requestHash: string]: { [requestId: string]: Canceler };
@@ -136,6 +136,11 @@ interface ApiRequest {
     onAnyError(callback: EventCallbackFunc): ApiRequest;
 
     /**
+     * Cancels requests if it is in pending state.
+     */
+    cancel(): void;
+
+    /**
      * Creates and performs http request.
      * Cancels previous pending requests with the same method, url and identifier.
      *
@@ -150,6 +155,25 @@ interface ApiRequest {
      * @returns {Canceler} request cancel function
      */
     start(): Canceler;
+
+    /**
+     * Performs http request returning Rromise which will be resolved with data processed by the last onOk handler.
+     * `onFail`, `onCancel` and `onError` events will reject Promise.
+     *
+     * @param {string|number} identifier - some identifier
+     * @return {Promise}
+     */
+    startPromise(identifier?: string): Promise<any>
+
+    /**
+     * Creates and performs http request returning Rromise which will be resolved with data processed by the last onOk handler.
+     * `onFail`, `onCancel` and `onError` events will reject Promise.
+     * Cancels previous pending requests with the same method, url and identifier.
+     *
+     * @param {string|number} identifier - some identifier
+     * @returns {Promise}
+     */
+    startSinglePromise(identifier?: string): Promise<any>
 }
 
 export interface ApiConnector {
