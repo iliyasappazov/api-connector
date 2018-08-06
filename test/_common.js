@@ -6,7 +6,7 @@
  */
 export function testRequest(request) {
   return new Promise((resolve) => {
-    request.then(resolve).start();
+    request.then(resolve).start(null, false);
   });
 }
 

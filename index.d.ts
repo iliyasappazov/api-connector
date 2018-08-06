@@ -144,36 +144,34 @@ interface ApiRequest {
      * Creates and performs http request.
      * Cancels previous pending requests with the same method, url and identifier.
      *
-     * @param {string} identifier - some identifier
+     * Returns Canceler function if `promise` is set to false.
+     * Otherwise returns a Promise:
+     * + `onOk` event will resolve the Promise with a data returned by the last onOk handler.
+     * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
+     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+     * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
+     *
+     * @param {string|number} identifier - some identifier
+     * @param {boolean} promise
      * @returns {Canceler} request cancel function
      */
-    startSingle(identifier?: string): Canceler
+    startSingle(identifier?: string, promise?: boolean): Canceler
 
     /**
      * Performs http request.
      *
-     * @returns {Canceler} request cancel function
-     */
-    start(): Canceler;
-
-    /**
-     * Performs http request returning Rromise which will be resolved with data processed by the last onOk handler.
-     * `onFail`, `onCancel` and `onError` events will reject Promise.
+     * Returns Canceler function if `promise` is set to false.
+     * Otherwise returns a Promise:
+     * + `onOk` event will resolve the Promise with a data returned by the last onOk handler.
+     * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
+     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+     * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
      *
      * @param {string|number} identifier - some identifier
-     * @return {Promise}
+     * @param {boolean} promise
+     * @returns {Canceler|Promise} request cancel function, or Promise
      */
-    startPromise(identifier?: string): Promise<any>
-
-    /**
-     * Creates and performs http request returning Rromise which will be resolved with data processed by the last onOk handler.
-     * `onFail`, `onCancel` and `onError` events will reject Promise.
-     * Cancels previous pending requests with the same method, url and identifier.
-     *
-     * @param {string|number} identifier - some identifier
-     * @returns {Promise}
-     */
-    startSinglePromise(identifier?: string): Promise<any>
+    start(identifier?: string, promise?: boolean): Canceler;
 }
 
 export interface ApiConnector {
