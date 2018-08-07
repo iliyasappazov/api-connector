@@ -6,7 +6,7 @@
     ],
     "babel": "inherit"
   },
-  "version": "0.2.1",
+  "version": "0.3.1",
   "description": "Axios wrapper that simplifies js API SDK development.",
   "main": "dist/api-connector.js",
   "scripts": {

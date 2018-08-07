@@ -9,17 +9,22 @@ Axios wrapper that simplifies JS API SDK development.
 ### Import
 Import `api-connector`:
 ```js
-import ApiConn from "api-connector";
+import ApiConnector from "api-connector";
 // or
-ApiConn = require("api-connector").default;
+ApiConnector = require("api-connector").default;
 ```
 
 ### Example
-Create `GET` request:
+Create `GET` request with ES6 async/await:
 ```js
-ApiConn.reqGet("https://example.com")
-        .onOk(response => console.log(response.data))
-        .start();
+const response = await ApiConnector.reqGet("https://example.com")
+                                   .start();
+```
+or
+```js
+ApiConnector.reqGet("https://example.com")
+            .onOk(response => console.log(response))
+            .start('', false);
 ```
 
 
@@ -35,31 +40,39 @@ Assume:
 
 Create sample SDK:
 ```js
-import ApiConn from "api-connector";
+import ApiConnector from "api-connector";
 
-const exampleConn = ApiConn.create(
+const exampleApiConnector = ApiConnector.create(
         { baseURL: "https://example.com" }, 
         response => response.data.status === "ok"
     );
 
 function configureEndpoint(apiRequest) {
     return apiRequest.onOk(response => response.data.result)
-                     .onFail(response => console.log(response.data.message))
-                     .onError(error => console.log(error))
+                     .onFail(response => response.data.message);
 }
 
 const SDK = {
-    getUsers: () => configureEndpoint(exampleConn.reqGet("/users")),
-    deleteUser: (username) => configureEndpoint(exampleConn.reqDelete("/user", { name: username }))
+    getUsers: async () => await configureEndpoint(exampleApiConnector.reqGet("/users")).start(),
+    deleteUser: (username) => configureEndpoint(exampleApiConnector.reqDelete("/user", { name: username })).start(null, false)
 }
 
-SDK.getUsers()
-   .onOk(users => console.log("Total users count: ", users))
-   .start()
-   
+try {
+    const users = SDK.getUsers();
+    console.log("Total users count: ", users.length);
+} catch (e) {
+    if (e.isFail) {
+      console.log(e.data);
+    } else if (!e.isCancel) {
+      console.log(e);
+    }
+}
+
 SDK.deleteUser("John")
    .onOk(result => console.log("John has been deleted!"))
-   .start()
+   .onAnyError(() => console.log("John is survived!"));
+
+await SDK.deleteUser("John").genPromise();
 ```
 
 
@@ -95,12 +108,17 @@ These methods just calls `.request` method, e.g, `.reqPost` is equal to `ApiConn
 
 ### ApiRequest Api
 
-#### start()
+#### start(identifier='', promise=true)
 Performs http request.
+Returns Canceler function if `promise` is set to false.
+Otherwise returns a Promise:
++ `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
++ `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
++ `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
++ `onError` error will reject the Promise with a data returned by the last `onError` handler.
 
-#### startSingle(id?)
-Creates and performs http request.  
-Cancels previous pending requests with the same *method*, *url* and *id*.
+#### startSingle(identifier='', promise=true)
+Similar to `start` method but cancels previous pending requests with the same *method*, *url* and *id*.
 
 #### .on* event callbacks
 You can attach callbacks to the following events
@@ -121,7 +139,7 @@ All unsupported event names will be ignored.
 
 Attach callback to request cancellation and response with status code 401:
 ```js
-ApiConn.reqGet("https://example.com").onAny(callback, "onCancel", "onStatus=401").start();
+await ApiConn.reqGet("https://example.com").onAny(callback, "onCancel", "onStatus=401").start();
 ```
 
 ##### .onStatus(callback, ...statuses)
@@ -129,5 +147,5 @@ Adds callback to response with exact status code.
 
 Attach callback to responses with 201 and 202 status codes.
 ```js
-ApiConn.reqGet("https://example.com").onStatus(callback, 201, "202").start();
+await ApiConn.reqGet("https://example.com").onStatus(callback, 201, "202").start();
 ```
