@@ -104,11 +104,25 @@ test('ApiRequest throws an exception on Cancel', async (t) => {
 
   try {
     setTimeout(() => api.reqGet('/same').startSingle('same', false), 100);
-    await api.reqGet('/same', { timeout: 1000 }).startSingle('same');
+    await api.reqGet('/same', { timeout: 1000 }).onResponse(() => t.fail()).startSingle('same');
   } catch (e) {
     t.true(e.isCancel);
   }
 });
+
+
+test('ApiRequest could be cancelled manually', async (t) => {
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
+  const req = api.reqGet('/same', { timeout: 1000 }).onResponse(() => t.fail());
+
+  try {
+    setTimeout(() => req.cancel(), 100);
+    await req.start();
+  } catch (e) {
+    t.true(e.isCancel);
+  }
+});
+
 
 test(
   'ApiRequest throws an exception with the data field equal to the result of the last onCancel handler',
@@ -118,6 +132,7 @@ test(
     try {
       setTimeout(() => api.reqGet('/same').startSingle('same', false), 100);
       await api.reqGet('/same', { timeout: 1000 })
+        .onResponse(() => t.fail())
         .onAnyError(() => 1)
         .onCancel(one => one + 1)
         .startSingle('same');
@@ -127,3 +142,13 @@ test(
     }
   },
 );
+
+
+test('ApiRequest processes status callbacks set by onAny method call', async (t) => {
+  t.plan(2);
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
+
+  await api.reqGet('/ok', { status: 201 })
+    .onAny(() => t.pass(), 'onStatus=[200, 201, 202]', 'onStatus=201')
+    .start();
+});
