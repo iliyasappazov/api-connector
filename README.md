@@ -40,7 +40,20 @@ As you can see in the example above there are two ApiRequest modes:
 or rejected with the last `onFail`/`onCancel`/`onError` handler.  
 
 By default all requests are `promised`. 
-To start `simple` request call the `start`/`startSingle` method with set `promise` parameter set to `false`.
+To start `simple` request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
+
+Example:
+```js
+const request = ApiConnector.reqGet('https://example.com')
+                            .onOk(response => console.log(response));
+// start promised ApiRequest:
+await request.start()
+// start simple ApiRequest:
+request.start('', false);
+// start simple ApiRequest and then convert it to promised:
+request.start('', false);
+await request.genPromise();
+```
 
 ### Axios configuration
 ApiConnector simply wraps Axios requests thus all Axios configurations are still available. 
@@ -116,22 +129,27 @@ ApiConnector.reqGet('http://localhost')
             .onAnyError(alertError, 'onFail', 'onCancel', 'onError')
             .then(sayGoodbye, 'onOk', 'onFail', 'onCancel', 'onError');
 ```
-It is recommended to firstly set callbacks to the **basic** events and then to the **combined** ones.
 
 #### Multiple handlers
-You could attach multiple callbacks on the same event, all these callbacks will be fired in order in which they were added.
+You could attach multiple callbacks on the same event, all these callbacks will be fired in order in which they were added.  
 The result from the previous callback will be passed to the next one:
 ```js
 const result = await ApiConnector.reqGet('http://localhost')
-                                 .onOk(() => 'Hello')
+                                 .onOk(() => 'Hello,')
                                  .onOk(hello => hello + ' World')
                                  .then(helloWorld => helloWorld + '!')
                                  .start();
-console.log(result); // 'Hello world!'                                 
+console.log(result); // 'Hello, world!'                                 
 ```
 
 #### Post-handlers
-Event callbacks could be attached after the request start.
+Event callbacks could be attached after the request start:
+```js
+const request = ApiConnector.reqGet('http://localhost');
+await request.onOk(() => 'Hello, World!')
+             .start();
+request.onOk(res => console.log(res));  // 'Hello, World!'
+```
 
 #### Promised ApiRequest
 `Promised` ApiRequest returns a Promise that:
@@ -146,7 +164,7 @@ Event callbacks could be attached after the request start.
 + on `onCancel` event throws the following Error:
      ```js
      {
-       isFail: true,
+       isCancel: true,
        data: any // result of the last onCancel callback 
      }
      ```
@@ -179,7 +197,7 @@ You could cancel request manually by calling the `cancel` method:
 ```js
 const request = ApiConnector.reqGet('http://localhost')
                             .onCancel(() => console.log('Cancelled'));
-setTimeout(() => request.cancel, 100);
+setTimeout(() => request.cancel(), 100);
 request.start();
 ```
 `start`/`startSingle` methods returns Axios request cancellation functions when `promise` parameter is set to `false`:
@@ -195,8 +213,8 @@ cancel();
 ```js
 ApiConnector.reqGet('http://localhost', { param1: 1}).start('same');
 ApiConnector.reqGet('http://localhost', { param1: 1}).startSingle('same');  // will cancel previous request
-ApiConnector.reqGet('http://localhost', { param1: 1}).startSingle('different');  // will NOT cancel any requests
-ApiConnector.reqGet('http://localhost', { param1: 2}).startSingle('different');  // will NOT cancel any requests
+ApiConnector.reqGet('http://localhost', { param1: 1}).startSingle('different');  // will NOT cancel any requests, because request identifiers are different
+ApiConnector.reqGet('http://localhost', { param1: 2}).startSingle('different');  // will NOT cancel any requests, because request parameters are different
 ```
 
 ### SDK example
@@ -225,7 +243,11 @@ function configureEndpoint(apiRequest) {
 
 const SDK = {
     getUsers: async () => await configureEndpoint(exampleApiConnector.reqGet('/users')).start(),
-    deleteUser: (username) => configureEndpoint(exampleApiConnector.reqDelete('/user', { name: username })).start(null, false)
+    deleteUser: (username) => {
+      const endpoint = configureEndpoint(exampleApiConnector.reqDelete('/user', { name: username }));
+      endpoint.start('', false);
+      return endpoint;
+    }
 }
 
 try {
