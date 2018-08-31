@@ -1,5 +1,7 @@
 # api-connector
-Axios wrapper that simplifies JS API SDK development.
+Axios wrapper that simplifies JS API SDK development.  
+
+[![npm version](https://badge.fury.io/js/api-connector.svg)](https://badge.fury.io/js/api-connector)
 
 ## Getting started
 
@@ -15,7 +17,7 @@ ApiConnector = require('api-connector').default;
 ```
 
 ### Example
-Create `GET` request with ES6 async/await:
+Create `GET` request with async/await:
 ```js
 const response = await ApiConnector.reqGet('https://example.com')
                                    .start();
@@ -35,29 +37,32 @@ const responseData = await ApiConnector.reqGet('https://example.com')
 
 ### ApiRequest modes: `simple`/`promised`
 As you can see in the example above there are two ApiRequest modes:
-+ `simple` - async and based purely on callbacks;
-+ `promised` - returns Promise that will be resolved with the result of the last onOk handler 
-or rejected with the last `onFail`/`onCancel`/`onError` handler.  
++ **simple** - async and based purely on callbacks;
++ **promised** - returns Promise that will be resolved with the result of the last onOk handler 
+or rejected with the result of the last `onFail`/`onCancel`/`onError` handler.  
 
-By default all requests are `promised`. 
-To start `simple` request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
+By default all requests are **promised**. 
+To start **simple** request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
 
 Example:
 ```js
 const request = ApiConnector.reqGet('https://example.com')
                             .onOk(response => console.log(response));
+
 // start promised ApiRequest:
 await request.start()
+
 // start simple ApiRequest:
 request.start('', false);
+
 // start simple ApiRequest and then convert it to promised:
 request.start('', false);
 await request.genPromise();
 ```
 
 ### Axios configuration
-ApiConnector simply wraps Axios requests thus all Axios configurations are still available. 
-You create an ApiConnector instance with common axios configurations:
+ApiConnector simply wraps Axios requests thus all Axios configurations are still available.   
+You can create an ApiConnector instance with common axios configurations:
 ```js
 const generalAxiosConfigs = { base_url: 'http://localhost' };
 const connector = ApiConnector.create(generalAxiosConfigs);
@@ -69,17 +74,20 @@ const response = await connector.reqGet('/test', {param1: 'test'}, axiosConfigs)
 ```
 
 ### Response validation
-ApiConnector has a mechanism to determine the successfulness of the response.
-By default all completed responses are considered as successful.
-You can change this logic by passing `validateFunc` property to the `create` method. 
+ApiConnector has a mechanism to determine the successfulness of the response.  
+By default all completed responses are considered as successful.  
+You can change this logic by passing `validateFunc` property to the `create` method.
 This function should accept the Axios response object and return `true` if response is successful and `false` otherwise.
 For example:
 ```js
-const testConnector = ApiConnector.create({baseURL: 'http://localhost/api'}, response => response.data.result === 'OK');
-response = await testConnector.reqGet('/test')
-                              .onOk(() => console.log('Success')) // will be called on response { result: 'OK' ... }
-                              .onFail(() => console.log('Fail'))
-                              .start();
+const testConnector = ApiConnector.create(
+  {baseURL: 'http://localhost/api'},
+  response => response.data.result === 'OK'
+);
+const response = await testConnector.reqGet('/test')
+                    .onOk(() => console.log('Success')) // will be called on { result: 'OK' ... } response
+                    .onFail(() => console.log('Fail'))
+                    .start();
 ```
 
 ### Event handling
@@ -110,12 +118,11 @@ ApiConnector.reqGet('http://localhost')
 
 #### Combined events
 For convenience there are **combined** events that represents a different combinations of the **basic** events:
-+ `onResponse` - is called on any API response, combines `onOk` and `onFail` events
++ `onResponse` - combines `onOk` and `onFail` events
 + `onAnyError` - combines `onFail`, `onCancel`, `onError` events
 + `then` - combines `onOk`, `onFail`, `onCancel`, `onError` events 
 
-Compared to the **basic** events callbacks to the **combined** events could be attached only by calling 
-a method with the same name: 
+Callbacks to the **combined** events could be attached only by calling a method with the same name: 
 ```js
 ApiConnector.reqGet('http://localhost')
             .onResponse(processResponse)
@@ -126,8 +133,8 @@ the code above is equivalent to:
 ```js
 ApiConnector.reqGet('http://localhost')
             .onAny(processResponse, 'onOk', 'onFail')
-            .onAnyError(alertError, 'onFail', 'onCancel', 'onError')
-            .then(sayGoodbye, 'onOk', 'onFail', 'onCancel', 'onError');
+            .onAny(alertError, 'onFail', 'onCancel', 'onError')
+            .onAny(sayGoodbye, 'onOk', 'onFail', 'onCancel', 'onError');
 ```
 
 #### Multiple handlers
@@ -143,7 +150,7 @@ console.log(result); // 'Hello, world!'
 ```
 
 #### Post-handlers
-Event callbacks could be attached after the request start:
+Event callbacks could be attached after a request start:
 ```js
 const request = ApiConnector.reqGet('http://localhost');
 await request.onOk(() => 'Hello, World!')
@@ -219,40 +226,37 @@ ApiConnector.reqGet('http://localhost', { param1: 2}).startSingle('different'); 
 
 ### SDK example
 Assume:
-+ you have an API with base url: `https://example.com`;
-+ all successful responses have the following format: `{ status: 'ok', result: []}`;
-+ all failed responses have the following format: `{ status: 'fail', message: ''}`;
-+ there are GET `/users` and DELETE `/user?name={name}` endpoints;
-+ you have to create an SDK which will interact with API;
-+ SDK users should get only `result` response field value;
-+ on error SDK should log error or `message` response field.
+1. you have an API with base url: `https://example.com/api`;
+2. all successful responses have the following format: `{ status: 'success', result: *}`;
+3. all failed responses have the following format: `{ status: 'fail', message: ''}`;
+4. there are GET `/users` and DELETE `/user?name={name}` endpoints;
+5. SDK users should get only `result` response field value;
+6. on error SDK should log error or `message` response field.
 
-Create sample SDK:
+Sample SDK:
 ```js
 import ApiConnector from 'api-connector';
 
-const exampleApiConnector = ApiConnector.create(
-        { baseURL: 'https://example.com' }, 
-        response => response.data.status === 'ok'
+const api = ApiConnector.create(
+        { baseURL: 'https://example.com/api' }, // 1.
+        response => response.data.status === 'success'  // 2.
     );
 
-function configureEndpoint(apiRequest) {
-    return apiRequest.onOk(response => response.data.result)
-                     .onFail(response => response.data.message);
+function addCommonHandlers(apiRequest) {
+    return apiRequest.onOk(response => response.data.result)  // 5.
+                     .onFail(response => response.data.message);  // 6.
 }
 
 const SDK = {
-    getUsers: async () => await configureEndpoint(exampleApiConnector.reqGet('/users')).start(),
-    deleteUser: (username) => {
-      const endpoint = configureEndpoint(exampleApiConnector.reqDelete('/user', { name: username }));
-      endpoint.start('', false);
-      return endpoint;
-    }
-}
+    getUsers: async () => await addCommonHandlers(api.reqGet('/users')).start(),
+    deleteUser: async (username) => await addCommonHandlers(api.reqDelete('/user', { name: username })),
+}; // 4.
 
 try {
     const users = SDK.getUsers();
     console.log('Total users count: ', users.length);
+    
+    SDK.deleteUser('John');
 } catch (e) {
     if (e.isFail) {
       console.log(e.data);
@@ -260,12 +264,6 @@ try {
       console.log(e);
     }
 }
-
-SDK.deleteUser('John')
-   .onOk(result => console.log('John has been deleted!'))
-   .onAnyError(() => console.log('John survived!'));
-
-await SDK.deleteUser('John').genPromise();
 ```
 
 
@@ -306,12 +304,24 @@ Performs http request.
 Returns Canceler function if `promise` is set to false.
 Otherwise returns a Promise:
 + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
-+ `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
-+ `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
-+ `onError` error will reject the Promise with a data returned by the last `onError` handler.
++ `onFail` event will reject the Promise with the following Error: 
+    ```js
+    {
+      isFail: true,
+      data: any // result of the last onFail callback 
+    }
+    ```
++ `onCancel` event will reject the Promise with the following Error:
+     ```js
+     {
+       isCancel: true,
+       data: any // result of the last onCancel callback 
+     }
+     ```
++ `onError` event will reject the Promise with the result of the last `onError` callback.
 
 #### startSingle(identifier='', promise=true)
-Similar to `start` method but cancels previous pending requests with the same *method*, *url* and *id*.
+Similar to `start` method but cancels previous pending requests with the same *method*, *url* and *identifier*.
 
 #### .on* event callbacks
 You can attach callbacks to the following events
@@ -327,12 +337,14 @@ You can attach callbacks to the following events
 
 ##### .onAny(callback, ...eventNames)
 Attaches callback to all given events.  
-Supported event names: `'onOk'`, `'onFail'`, `'onCancel'`, `'onError'`, `'onStatus={status}'`.  
+Supported event names: `'onOk'`, `'onFail'`, `'onCancel'`, `'onError'`, `'onStatus={status}'`, `'onStatus=[{status1}, {status2}]'`.  
 All unsupported event names will be ignored.
 
 Attach callback to request cancellation and response with status code 401:
 ```js
-await ApiConn.reqGet('https://example.com').onAny(callback, 'onCancel', 'onStatus=401').start();
+await ApiConn.reqGet('https://example.com')
+             .onAny(callback, 'onCancel', 'onStatus=401')
+             .start();
 ```
 
 ##### .onStatus(callback, ...statuses)
@@ -340,5 +352,7 @@ Adds callback to response with exact status code.
 
 Attach callback to responses with 201 and 202 status codes.
 ```js
-await ApiConn.reqGet('https://example.com').onStatus(callback, 201, '202').start();
+await ApiConn.reqGet('https://example.com')
+             .onStatus(callback, 201, '202')
+             .start();
 ```
