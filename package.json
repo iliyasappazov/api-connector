@@ -6,13 +6,14 @@
     ],
     "babel": "inherit"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Axios wrapper that simplifies js API SDK development.",
   "main": "dist/api-connector.js",
   "scripts": {
-    "lint": "esw --fix ./lib ./test -w",
+    "lint": "esw --fix ./lib ./test",
     "prepublishOnly": "set BABEL_ENV=production && rollup -c",
-    "test": "nyc ava"
+    "test": "nyc ava",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "files": [
     "dist/api-connector.js",
@@ -45,6 +46,7 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
+    "coveralls": "^3.0.2",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",

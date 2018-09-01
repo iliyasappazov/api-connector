@@ -16,3 +16,6 @@ dist
 # Coverage
 .nyc_output
 coverage
+
+# Coveralls
+.coveralls.yml
