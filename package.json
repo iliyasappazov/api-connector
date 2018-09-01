@@ -13,7 +13,7 @@
     "lint": "esw --fix ./lib ./test",
     "prepublishOnly": "set BABEL_ENV=production && rollup -c",
     "test": "nyc ava",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "files": [
     "dist/api-connector.js",
