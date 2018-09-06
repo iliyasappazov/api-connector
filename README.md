@@ -4,6 +4,7 @@ Axios wrapper that simplifies JS API SDK development.
 [![npm version](https://badge.fury.io/js/api-connector.svg)](https://badge.fury.io/js/api-connector)
 [![Build Status](https://travis-ci.org/iliyasappazov/api-connector.svg?branch=master)](https://travis-ci.org/iliyasappazov/api-connector)
 [![Coverage Status](https://coveralls.io/repos/github/iliyasappazov/api-connector/badge.svg)](https://coveralls.io/github/iliyasappazov/api-connector)
+[![dependencies Status](https://david-dm.org/iliyasappazov/api-connector/status.svg)](https://david-dm.org/iliyasappazov/api-connector)
 
 ## Getting started
 
@@ -358,3 +359,6 @@ await ApiConn.reqGet('https://example.com')
              .onStatus(callback, 201, '202')
              .start();
 ```
+
+## License
+[MIT License](https://github.com/iliyasappazov/api-connector/blob/master/LICENSE)
