@@ -25,7 +25,7 @@ Create `GET` request with async/await:
 const response = await ApiConnector.reqGet('https://example.com')
                                    .start();
 ```
-Create `GET` request without promise:
+Create `GET` request without a promise:
 ```js
 ApiConnector.reqGet('https://example.com')
             .onOk(response => console.log(response))
@@ -40,25 +40,25 @@ const responseData = await ApiConnector.reqGet('https://example.com')
 
 ### ApiRequest modes: `simple`/`promised`
 As you can see in the example above there are two ApiRequest modes:
-+ **simple** - async and based purely on callbacks;
-+ **promised** - returns Promise that will be resolved with the result of the last onOk handler 
++ **simple** - based purely on callbacks;
++ **promised** - returns a Promise that will be resolved with the result of the last `onOk` handler 
 or rejected with the result of the last `onFail`/`onCancel`/`onError` handler.  
 
 By default all requests are **promised**. 
-To start **simple** request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
+To start a **simple** request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
 
 Example:
 ```js
 const request = ApiConnector.reqGet('https://example.com')
                             .onOk(response => console.log(response));
 
-// start promised ApiRequest:
+// start a promised ApiRequest:
 await request.start()
 
-// start simple ApiRequest:
+// start a simple ApiRequest:
 request.start('', false);
 
-// start simple ApiRequest and then convert it to promised:
+// start a simple ApiRequest and then convert it to promised:
 request.start('', false);
 await request.genPromise();
 ```
@@ -70,24 +70,44 @@ You can create an ApiConnector instance with common axios configurations:
 const generalAxiosConfigs = { base_url: 'http://localhost' };
 const connector = ApiConnector.create(generalAxiosConfigs);
 ```
-And/or pass the Axios configuration object directly to the request as last parameter:
+And/or pass the Axios configuration object directly to the request through `config` parameter:
 ```js
 const axiosConfigs = { timeout: 1000 };
-const response = await connector.reqGet('/test', {param1: 'test'}, axiosConfigs).start()
+const response = await connector.reqGet('/test', {param1: 'test'}, axiosConfigs).start();
+```
+Or pass configured Axios instance directly to the request through `apiConfigs` parameter:
+```js
+const response = await connector.reqGet('/test', {param1: 'test'}, {}, { axios: anyAxiosInstance }).start();
 ```
 
 ### Response validation
 ApiConnector has a mechanism to determine the successfulness of the response.  
 By default all completed responses are considered as successful.  
-You can change this logic by passing `validateFunc` property to the `create` method.
+You can change this logic by setting a *validation function*.
 This function should accept the Axios response object and return `true` if response is successful and `false` otherwise.
-For example:
+Specify *validation function* for ApiConnector instance:
 ```js
 const testConnector = ApiConnector.create(
   {baseURL: 'http://localhost/api'},
-  response => response.data.result === 'OK'
+  response => response.data.result === 'OKAY'
 );
 const response = await testConnector.reqGet('/test')
+                    .onOk(() => console.log('Success')) // will be called on { result: 'OKAY' ... } response
+                    .onFail(() => console.log('Fail'))
+                    .start();
+```
+or specify *validation function* only for a single request:
+```js
+const axiosInstance = Axios.create({ baseURL: 'http://localhost/api/v2'});
+const response = await testConnector.reqGet(
+                        '/test', 
+                        params, 
+                        null,
+                        { 
+                          axios: axiosInstance,
+                          validateFunc: response => response.data.result === 'OK' 
+                        }
+                    )
                     .onOk(() => console.log('Success')) // will be called on { result: 'OK' ... } response
                     .onFail(() => console.log('Fail'))
                     .start();
@@ -282,25 +302,25 @@ Provided validate function will be used in response status evaluation:
 myApiConn = ApiConn.create({}, response => response.data.status === 'ok');
 ```
 
-#### .request(config)
-Creates and returns `ApiRequest` using Axios request configs.
+#### .request(axiosConfig, apiConfig)
+Creates and returns `ApiRequest` using *Axios request* configs and *ApiConnector request* configs.
 ```js
-req = ApiConn.request({method: 'GET', url: 'https://example.com'});
+req = ApiConn.request({method: 'GET', url: 'https://example.com'}, { validateFunc: response => !!response.data });
 ```
 
 #### .req* Aliases
 For convenience aliases have been provided for some request methods:
 
-##### .reqGet(url, params?, config?)
-##### .reqPost(url, data?, params?, config?)
-##### .reqPatch(url, data?, params?, config?)
-##### .reqPut(url, data?, params?, config?)
-##### .reqDelete(url, params?, config?)
+##### .reqGet(url, params?, axiosConfig?, apiConfig?)
+##### .reqPost(url, data?, params?, axiosConfig?, apiConfig?)
+##### .reqPatch(url, data?, params?, axiosConfig?, apiConfig?)
+##### .reqPut(url, data?, params?, axiosConfig?, apiConfig?)
+##### .reqDelete(url, params?, axiosConfig?, apiConfig?)
 
-These methods just calls `.request` method, e.g, `.reqPost` is equal to `ApiConn.request({method: 'POST', url, data, params, ...config})`. 
+These methods just calls `.request` method, e.g, `.reqPost` is equal to `ApiConn.request({method: 'POST', url, data, params, ...config}, apiConfig)`. 
 
 
-### ApiRequest Api
+### ApiRequest API
 
 #### start(identifier='', promise=true)
 Performs http request.

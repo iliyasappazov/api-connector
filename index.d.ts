@@ -174,8 +174,13 @@ interface ApiRequest {
     start(identifier?: string, promise?: boolean): Canceler;
 }
 
+declare class ApiRequestConfig {
+    axios: AxiosInstance;
+    validateFunc: ValidateResponseFunc;
+}
+
 export interface ApiConnector {
-    (configs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
+    (axiosConfigs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
 
     validateFunc: ValidateResponseFunc;
     axios: AxiosInstance;
@@ -185,10 +190,11 @@ export interface ApiConnector {
      *
      * @param {string} url - API endpoint url
      * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    reqGet(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    reqGet(url: string, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 
     /**
      * Creates POST request.
@@ -196,10 +202,11 @@ export interface ApiConnector {
      * @param {string} url - API endpoint url
      * @param {{}} data - request body data
      * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    reqPost(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    reqPost(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 
     /**
      * Creates PATCH request.
@@ -207,10 +214,11 @@ export interface ApiConnector {
      * @param {string} url - API endpoint url
      * @param {{}} data - request body data
      * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    reqPatch(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    reqPatch(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 
     /**
      * Creates PUT request.
@@ -218,32 +226,35 @@ export interface ApiConnector {
      * @param {string} url - API endpoint url
      * @param {{}} data - request body data
      * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    reqPut(url: string, data?: any, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    reqPut(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 
     /**
      * Creates DELETE request.
      *
      * @param {string} url - API endpoint url
      * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} configs - Axios request configuration
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    reqDelete(url: string, params?: any, configs?: AxiosRequestConfig): ApiRequest;
+    reqDelete(url: string, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 
     /**
      * Creates ApiRequest
      *
-     * @param {AxiosRequestConfig} configs - Axios configs
+     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
+     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
      * @returns {ApiRequest} request promise
      */
-    request(configs?: AxiosRequestConfig): ApiRequest;
+    request(axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
 }
 
 interface ApiConnectorStatic extends ApiConnector {
-    create(configs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
+    create(axiosConfigs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
 }
 
 declare const Default: ApiConnectorStatic;

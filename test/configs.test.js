@@ -1,4 +1,5 @@
 import test from 'ava';
+import Axios from 'axios';
 import { createServer, getFreePort } from './_server';
 import ApiConn from '../lib/index';
 import { testRequest } from './_common';
@@ -47,6 +48,38 @@ test('validate function changes response validation logic', async (t) => {
   // test successful response
   await testRequest(
     api.reqGet('/ok')
+      .onOk(() => t.pass())
+      .onFail(() => t.fail()),
+  );
+});
+
+test('validate function passed to request overwrites global one', async (t) => {
+  const globalValidateFunc = response => response.data.url === '/ok';
+  const instanceValidateFunc = response => response.data.url === '/okay';
+
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` }, globalValidateFunc);
+
+  // test failed response
+  await testRequest(
+    api.reqGet('/fail', {}, {}, { validateFunc: instanceValidateFunc })
+      .onOk(() => t.fail())
+      .onFail(() => t.pass()),
+  );
+
+  // test successful response
+  await testRequest(
+    api.reqGet('/okay', {}, {}, { validateFunc: instanceValidateFunc })
+      .onOk(() => t.pass())
+      .onFail(() => t.fail()),
+  );
+});
+
+test('axios instance passed to request overwrites global one', async (t) => {
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` }, response => response.data.url === '/ok/ok');
+  const axiosInstance = Axios.create({ baseURL: `http://localhost:${port}/ok` });
+
+  await testRequest(
+    api.reqGet('/ok', {}, {}, { axios: axiosInstance })
       .onOk(() => t.pass())
       .onFail(() => t.fail()),
   );
