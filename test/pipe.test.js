@@ -9,9 +9,9 @@ test('piped callbacks are called sequentially', (t) => {
   };
 
   const pipe = new Pipe();
-  pipe.join(response => response.data)
-    .join(data => data.inner)
-    .join(inner => t.is(inner, 'value'));
+  pipe.join((response) => response.data)
+    .join((data) => data.inner)
+    .join((inner) => t.is(inner, 'value'));
 
   pipe.process(initialResponse);
 });
@@ -26,7 +26,7 @@ test(
       innerData = innerData.inner;
     }
 
-    const handler = curData => curData.inner;
+    const handler = (curData) => curData.inner;
 
     const pipe = new Pipe();
     pipe.join(handler)

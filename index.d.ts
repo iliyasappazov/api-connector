@@ -97,7 +97,7 @@ interface ApiRequest {
      * @param {EventCallbackFunc} callback
      * @returns {ApiRequest} the same request
      */
-    onResponse(callback: EventCallbackFunc): ApiRequest;
+    onCancel(callback: EventCallbackFunc): ApiRequest;
 
     /**
      * Adds callback function that will be called on exception rise.

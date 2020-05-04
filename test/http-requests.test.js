@@ -20,12 +20,12 @@ test('apiGet sends GET request with correct url and params', async (t) => {
 
   await testRequest(
     api.reqGet('/get-request', params)
-      .onOk(response => t.deepEqual(response.data, {
+      .onOk((response) => t.deepEqual(response.data, {
         url: '/get-request?any=param',
         method: 'GET',
         params,
       }))
-      .onAnyError(err => t.fail(err)),
+      .onAnyError((err) => t.fail(err)),
   );
 });
 
@@ -37,13 +37,13 @@ test('apiPost sends POST request with correct url, params and data', async (t) =
 
   await testRequest(
     api.reqPost('/post-request', data, params)
-      .onOk(response => t.deepEqual(response.data, {
+      .onOk((response) => t.deepEqual(response.data, {
         url: '/post-request?any=param',
         method: 'POST',
         params,
         data,
       }))
-      .onAnyError(err => t.fail(err)),
+      .onAnyError((err) => t.fail(err)),
   );
 });
 
@@ -54,13 +54,13 @@ test('apiPatch sends PATCH request with correct url, params and data', async (t)
 
   await testRequest(
     api.reqPatch('/patch-request', data, params)
-      .onOk(response => t.deepEqual(response.data, {
+      .onOk((response) => t.deepEqual(response.data, {
         url: '/patch-request?any=param',
         method: 'PATCH',
         params,
         data,
       }))
-      .onAnyError(err => t.fail(err)),
+      .onAnyError((err) => t.fail(err)),
   );
 });
 
@@ -71,13 +71,13 @@ test('apiPut sends PUT request with correct url, params and data', async (t) => 
 
   await testRequest(
     api.reqPut('/put-request', data, params)
-      .onOk(response => t.deepEqual(response.data, {
+      .onOk((response) => t.deepEqual(response.data, {
         url: '/put-request?any=param',
         method: 'PUT',
         params,
         data,
       }))
-      .onAnyError(err => t.fail(err)),
+      .onAnyError((err) => t.fail(err)),
   );
 });
 
@@ -87,11 +87,11 @@ test('reqDelete sends DELETE request with correct url and params', async (t) => 
 
   await testRequest(
     api.reqDelete('/delete-request', params)
-      .onOk(response => t.deepEqual(response.data, {
+      .onOk((response) => t.deepEqual(response.data, {
         url: '/delete-request?any=param',
         method: 'DELETE',
         params,
       }))
-      .onAnyError(err => t.fail(err)),
+      .onAnyError((err) => t.fail(err)),
   );
 });

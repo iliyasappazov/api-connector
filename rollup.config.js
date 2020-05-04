@@ -17,13 +17,13 @@ export default {
       babelrc: false,
       presets: [
         [
-          'env',
+          '@babel/preset-env',
           {
             modules: false,
           },
         ],
       ],
-      plugins: ['external-helpers', 'transform-object-rest-spread'],
+      plugins: ['@babel/plugin-proposal-object-rest-spread'],
       runtimeHelpers: true,
     }),
     uglify(),

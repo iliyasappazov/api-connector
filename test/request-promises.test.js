@@ -26,7 +26,7 @@ test('ApiRequest resolves with the result of the last onOk handler', async (t) =
 
   const two = await api.reqGet('/ok')
     .onResponse(() => 1)
-    .onOk(one => one + 1)
+    .onOk((one) => one + 1)
     .start();
   t.is(two, 2);
 });
@@ -37,7 +37,7 @@ test('ApiRequest processes status callbacks before the resolving', async (t) => 
   const two = await api.reqGet('/ok', { status: 201 })
     .onStatus(() => t.pass(), 201)
     .onOk(() => 1)
-    .onOk(one => one + 1)
+    .onOk((one) => one + 1)
     .start();
   t.is(two, 2);
 });
@@ -61,8 +61,8 @@ test('ApiRequest throws an exception with the data field equal to the result of 
   try {
     await api.reqGet('/fail')
       .onAnyError(() => 1)
-      .onResponse(one => one + 1)
-      .onFail(two => two + 1)
+      .onResponse((one) => one + 1)
+      .onFail((two) => two + 1)
       .start();
   } catch (e) {
     if (e.isFail) {
@@ -89,7 +89,7 @@ test('ApiRequest throws the result of the last onError handler', async (t) => {
   try {
     await api.reqGet('/error', { status: 500 })
       .onAnyError(() => 1)
-      .onError(one => one + 1)
+      .onError((one) => one + 1)
       .start();
   } catch (e) {
     t.falsy(e.isFail);
@@ -134,7 +134,7 @@ test(
       await api.reqGet('/same', { timeout: 1000 })
         .onResponse(() => t.fail())
         .onAnyError(() => 1)
-        .onCancel(one => one + 1)
+        .onCancel((one) => one + 1)
         .startSingle('same');
     } catch (e) {
       t.true(e.isCancel);
