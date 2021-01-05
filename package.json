@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/iliyasappazov/api-connector#readme",
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.21.1"
   },
   "devDependencies": {
     "ava": "^3.8.1",
