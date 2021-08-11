@@ -1,6 +1,7 @@
 import test from 'ava';
 import { createServer, getFreePort } from './_server';
 import ApiConn from '../lib/index';
+import { testRequest, testRequestSingle } from './_common';
 
 let server = null;
 let port = 0;
@@ -151,4 +152,28 @@ test('ApiRequest processes status callbacks set by onAny method call', async (t)
   await api.reqGet('/ok', { status: 201 })
     .onAny(() => t.pass(), 'onStatus=[200, 201, 202]', 'onStatus=201')
     .start();
+});
+
+
+test('ApiRequest does not throw exception when started quietly with error callback', async (t) => {
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
+
+  try {
+    await testRequest(api.reqGet('/error', { status: 500 })
+      .onAnyError(() => t.pass()));
+  } catch (e) {
+    t.fail();
+  }
+});
+
+
+test('ApiRequest does not throw exception when started single quietly with error callback', async (t) => {
+  const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
+
+  try {
+    await testRequestSingle(api.reqGet('/error', { status: 500 })
+      .onAnyError(() => t.pass()));
+  } catch (e) {
+    t.fail();
+  }
 });

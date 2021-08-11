@@ -6,7 +6,7 @@
  */
 export function testRequest(request) {
   return new Promise((resolve) => {
-    request.then(resolve).start(null, false);
+    request.then(resolve).startQuietly();
   });
 }
 
@@ -18,6 +18,6 @@ export function testRequest(request) {
  */
 export function testRequestSingle(request) {
   return new Promise((resolve) => {
-    request.then(resolve).startSingle();
+    request.then(resolve).startSingleQuietly();
   });
 }
