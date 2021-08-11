@@ -14,7 +14,6 @@ test.after.always('cleanup', () => {
   server.close();
 });
 
-
 test('ApiRequest resolves with response on Ok', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
 
@@ -42,7 +41,6 @@ test('ApiRequest processes status callbacks before the resolving', async (t) => 
     .start();
   t.is(two, 2);
 });
-
 
 test('ApiRequest throws an exception on Fail', async (t) => {
   const validateFunc = () => false;
@@ -72,7 +70,6 @@ test('ApiRequest throws an exception with the data field equal to the result of 
   }
 });
 
-
 test('ApiRequest throws an exception on Error', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
 
@@ -99,7 +96,6 @@ test('ApiRequest throws the result of the last onError handler', async (t) => {
   }
 });
 
-
 test('ApiRequest throws an exception on Cancel', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
 
@@ -110,7 +106,6 @@ test('ApiRequest throws an exception on Cancel', async (t) => {
     t.true(e.isCancel);
   }
 });
-
 
 test('ApiRequest could be cancelled manually', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
@@ -123,7 +118,6 @@ test('ApiRequest could be cancelled manually', async (t) => {
     t.true(e.isCancel);
   }
 });
-
 
 test(
   'ApiRequest throws an exception with the data field equal to the result of the last onCancel handler',
@@ -144,7 +138,6 @@ test(
   },
 );
 
-
 test('ApiRequest processes status callbacks set by onAny method call', async (t) => {
   t.plan(2);
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
@@ -153,7 +146,6 @@ test('ApiRequest processes status callbacks set by onAny method call', async (t)
     .onAny(() => t.pass(), 'onStatus=[200, 201, 202]', 'onStatus=201')
     .start();
 });
-
 
 test('ApiRequest does not throw exception when started quietly with error callback', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
@@ -165,7 +157,6 @@ test('ApiRequest does not throw exception when started quietly with error callba
     t.fail();
   }
 });
-
 
 test('ApiRequest does not throw exception when started single quietly with error callback', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });

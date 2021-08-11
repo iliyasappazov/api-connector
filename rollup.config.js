@@ -1,5 +1,5 @@
-import babel from 'rollup-plugin-babel';
-import { uglify } from 'rollup-plugin-uglify';
+import { babel } from '@rollup/plugin-babel';
+import { terser } from 'rollup-plugin-terser';
 
 export default {
   input: 'lib/index.js',
@@ -15,6 +15,7 @@ export default {
   plugins: [
     babel({
       babelrc: false,
+      exclude: 'node_modules/**',
       presets: [
         [
           '@babel/preset-env',
@@ -23,10 +24,12 @@ export default {
           },
         ],
       ],
-      plugins: ['@babel/plugin-proposal-object-rest-spread'],
-      runtimeHelpers: true,
+      plugins: [
+        '@babel/plugin-proposal-object-rest-spread',
+      ],
+      babelHelpers: 'bundled',
     }),
-    uglify(),
+    terser(),
   ],
   external: ['axios'],
 };

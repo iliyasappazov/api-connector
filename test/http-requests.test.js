@@ -29,7 +29,6 @@ test('apiGet sends GET request with correct url and params', async (t) => {
   );
 });
 
-
 test('apiPost sends POST request with correct url, params and data', async (t) => {
   const api = ApiConn.create({ baseURL: `http://localhost:${port}` });
   const params = { any: 'param' };
