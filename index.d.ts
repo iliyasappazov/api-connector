@@ -170,39 +170,22 @@ export interface ApiRequest<Ok, Fail=Ok, Cancel = any> {
      */
     start(identifier?: string): Promise<Ok>;
 
-    //
-    // /**
-    //  * Creates and performs http request.
-    //  * Cancels previous pending requests with the same method, url and identifier.
-    //  *
-    //  * Returns Canceler function if `promise` is set to false.
-    //  * Otherwise returns a Promise:
-    //  * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
-    //  * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
-    //  * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
-    //  * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
-    //  *
-    //  * @param {string|number} identifier - some identifier
-    //  * @param {boolean} promise
-    //  * @returns {Canceler} request cancel function
-    //  */
-    // startSingle(identifier?: string, promise?: boolean): Canceler<T>
-    //
-    // /**
-    //  * Performs http request.
-    //  *
-    //  * Returns Canceler function if `promise` is set to false.
-    //  * Otherwise returns a Promise:
-    //  * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
-    //  * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
-    //  * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
-    //  * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
-    //  *
-    //  * @param {string|number} identifier - some identifier
-    //  * @param {boolean} promise
-    //  * @returns {Canceler|Promise} request cancel function, or Promise
-    //  */
-    // start(identifier?: string, promise?: boolean): Canceler<T>;
+    /**
+     * Creates and performs http request.
+     * Cancels previous pending requests with the same method, url and identifier.
+     * Returns Canceler function.
+     *
+     * @param {string|number} identifier - some identifier
+     */
+    startSingleQuietly(identifier?: string): Canceler
+
+    /**
+     * Performs http request.
+     * Returns Canceler function.
+     *
+     * @param {string|number} identifier - some identifier
+     */
+    startQuietly(identifier?: string): Canceler;
 }
 
 export type ApiRequestConfig<ResponseData> = {
