@@ -6,7 +6,7 @@
     ],
     "babel": true
   },
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Axios wrapper that simplifies js API SDK development.",
   "main": "dist/api-connector.js",
   "scripts": {
