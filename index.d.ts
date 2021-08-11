@@ -4,14 +4,12 @@ import {AxiosResponse, Canceler, AxiosRequestConfig, AxiosInstance} from "axios"
  * Function that decides whether response is *successful* or *failed*,
  * accepts Axios response object, should return `true` if response is *successful*.
  */
-interface ValidateResponseFunc {
-    (data: AxiosResponse): boolean;
-}
+export type ValidateResponseFunc<ResponseData> = (data: AxiosResponse<ResponseData>) => boolean;
 
 /**
  * Dictionary with pending request cancel functions.
  * Keys are hashes of request method, url and id.
- * Values are another dictionaries - with request ts as keys and request cancel functions as values.
+ * Values are dictionaries with request ts as keys and request cancel functions as values.
  *
  * @example
  * {
@@ -21,13 +19,17 @@ interface ValidateResponseFunc {
  *      }
  * }
  */
-interface PendingRequestsDict {
+export type PendingRequestsDict = {
     [requestHash: string]: { [requestId: string]: Canceler };
 }
 
-interface EventCallbackFunc {
-    (data: any): any;
-}
+export type EventCallbackFunc<DataIn, DataOut = DataIn> = (data: DataIn) => DataOut;
+
+export type RequestEventNames = 'onOk' | 'onFail' | 'onCancel' | 'onError' | `onStatus=${number}`;
+
+export type ApiRequestError<Fail, Cancel> = { isCancel: true, data: Cancel }
+    | { isFail: true, data: Fail }
+    | { data: any };
 
 /**
  * ApiRequest creates and performs cancellable http request.
@@ -42,87 +44,84 @@ interface EventCallbackFunc {
  * + status code (`.onStatus`)
  * + any event combination (`.onAny`)
  */
-interface ApiRequest {
+export interface ApiRequest<Ok, Fail=Ok, Cancel = any> {
     /**
      * Stores configurations and initializes callback pipes.
-     * Validate function will be used to evaluate response success.
-     * Axios response object will be passed to the function, and if `true` is returned the response is said to be *successful*.
+     * Validate function will be used to evaluate whether response is successful or not.
+     * Axios response object will be passed to the function,
+     * and if `true` is returned the response is said to be *successful*.
      * If the function is `null` any response will be considered as *successful*.
      *
-     * @param {AxiosInstance} axios - Axios instance
-     * @param {PendingRequestsDict} pendingRequests  - dictionary with pending request cancel functions
-     * @param {ValidateResponseFunc} validateFunc - function that decides whether a response is *successful* or *failed*
-     * @param {AxiosRequestConfig} configs  - Axios configs
+     * @param axios - Axios instance
+     * @param pendingRequests  - dictionary with pending request cancel functions
+     * @param validateFunc - function that decides whether a response is *successful* or *failed*
+     * @param configs  - Axios configs
      */
-    (axios: AxiosInstance, pendingRequests: PendingRequestsDict, validateFunc: ValidateResponseFunc, configs: AxiosRequestConfig): ApiRequest;
+    <In>(
+        axios: AxiosInstance,
+        pendingRequests: PendingRequestsDict,
+        validateFunc: ValidateResponseFunc<In>,
+        configs: AxiosRequestConfig
+    ): ApiRequest<In>;
 
     /**
-     * Attaches callback to all given events.
+     * Attaches the callback to all specified events.
      * Supported event names: `"onOk"`, `"onFail"`, `"onCancel"`, `"onError"`, `"onStatus={status}"`.
      * All unsupported event names will be ignored.
-     *
-     * @param {EventCallbackFunc} callback
-     * @param {...string} eventNames
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onAny(callback: EventCallbackFunc, ...eventNames: string[]): ApiRequest;
+    onAny<OkOut = Ok, FailOut = Fail, CancelOut = Cancel>(
+        callback: EventCallbackFunc<Ok | Fail | Cancel | any, OkOut | FailOut | CancelOut>,
+        ...eventNames: RequestEventNames[]
+    ): ApiRequest<OkOut, FailOut, CancelOut>;
 
     /**
      * Adds callback to *successful* response.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onOk(callback: EventCallbackFunc): ApiRequest;
+    onOk<OkOut = Ok>(callback: EventCallbackFunc<Ok, OkOut>)
+        : ApiRequest<OkOut, Fail, Cancel>;
 
     /**
      * Adds callback to *failed* response.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onFail(callback: EventCallbackFunc): ApiRequest;
+    onFail<FailOut = Fail>(callback: EventCallbackFunc<Fail, FailOut>)
+        : ApiRequest<Ok, FailOut, Cancel>;
 
     /**
      * Adds callback to any response.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onResponse(callback: EventCallbackFunc): ApiRequest;
+    onResponse<Out = Ok | Fail>(callback: EventCallbackFunc<Ok | Fail, Out>)
+        : ApiRequest<Out, Out, Cancel>;
 
     /**
      * Adds callback to request cancellation.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onCancel(callback: EventCallbackFunc): ApiRequest;
+    onCancel<CancelOut = Cancel>(callback: EventCallbackFunc<Cancel, CancelOut>)
+        : ApiRequest<Ok, Fail, CancelOut>;
 
     /**
      * Adds callback function that will be called on exception rise.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onError(callback: EventCallbackFunc): ApiRequest;
+    onError(callback: EventCallbackFunc<any, any>): ApiRequest<Ok, Fail, Cancel>;
 
     /**
      * Adds callback that will be fired last on any request result.
-     *
-     * @param {EventCallbackFunc} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    then(callback: EventCallbackFunc): ApiRequest;
+    then<Out = Ok | Fail | Cancel>(callback: EventCallbackFunc<Ok | Fail | Cancel, Out>)
+        : ApiRequest<Out, Out, Out>;
 
     /**
      * Adds callback to response with exact status code.
-     *
-     * @param {EventCallbackFunc} callback
-     * @param {...number} statuses
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onStatus(callback: EventCallbackFunc, ...statuses: number[]): ApiRequest;
+    onStatus(callback: EventCallbackFunc<Ok | Fail | Cancel, any>, ...statuses: number[])
+        : ApiRequest<Ok, Fail, Cancel>;
 
     /**
      * Adds callback that will be fired on any not Ok results:
@@ -130,10 +129,10 @@ interface ApiRequest {
      * + error
      * + cancel
      *
-     * @param {function} callback
-     * @returns {ApiRequest} the same request
+     * Returns the same request.
      */
-    onAnyError(callback: EventCallbackFunc): ApiRequest;
+    onAnyError<Out = Fail | Cancel>(callback: EventCallbackFunc<Fail | Cancel | any, Out>)
+        : ApiRequest<Ok, Out, Out>;
 
     /**
      * Cancels requests if it is in pending state.
@@ -144,117 +143,178 @@ interface ApiRequest {
      * Creates and performs http request.
      * Cancels previous pending requests with the same method, url and identifier.
      *
-     * Returns Canceler function if `promise` is set to false.
-     * Otherwise returns a Promise:
+     * Possible promise outcomes:
      * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
-     * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
-     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+     * + `onFail` event will reject the Promise with an error with `isFail` property set `true`
+     * and `data` property with a data returned by the last `onFail` handler.
+     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true`
+     * and `data` property with a data returned by the last `onCancel` handler.
      * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
      *
-     * @param {string|number} identifier - some identifier
-     * @param {boolean} promise
-     * @returns {Canceler} request cancel function
+     * @param identifier - some identifier
      */
-    startSingle(identifier?: string, promise?: boolean): Canceler
+    startSingle(identifier?: string): Promise<Ok>;
 
     /**
      * Performs http request.
      *
-     * Returns Canceler function if `promise` is set to false.
-     * Otherwise returns a Promise:
+     * Possible promise outcomes:
      * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
-     * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
-     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+     * + `onFail` event will reject the Promise with an error with `isFail` property set `true`
+     * and `data` property with a data returned by the last `onFail` handler.
+     * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true`
+     * and `data` property with a data returned by the last `onCancel` handler.
      * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
      *
-     * @param {string|number} identifier - some identifier
-     * @param {boolean} promise
-     * @returns {Canceler|Promise} request cancel function, or Promise
+     * @param identifier - some identifier
      */
-    start(identifier?: string, promise?: boolean): Canceler;
+    start(identifier?: string): Promise<Ok>;
+
+    //
+    // /**
+    //  * Creates and performs http request.
+    //  * Cancels previous pending requests with the same method, url and identifier.
+    //  *
+    //  * Returns Canceler function if `promise` is set to false.
+    //  * Otherwise returns a Promise:
+    //  * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
+    //  * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
+    //  * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+    //  * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
+    //  *
+    //  * @param {string|number} identifier - some identifier
+    //  * @param {boolean} promise
+    //  * @returns {Canceler} request cancel function
+    //  */
+    // startSingle(identifier?: string, promise?: boolean): Canceler<T>
+    //
+    // /**
+    //  * Performs http request.
+    //  *
+    //  * Returns Canceler function if `promise` is set to false.
+    //  * Otherwise returns a Promise:
+    //  * + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
+    //  * + `onFail` event will reject the Promise with an error with `isFail` property set `true` and `data` property with a data returned by the last `onFail` handler.
+    //  * + `onCancel` event will reject the Promise with an error with `isCancel` property set `true` and `data` property with a data returned by the last `onCancel` handler.
+    //  * + `onError` error will reject the Promise with a data returned by the last `onError` handler.
+    //  *
+    //  * @param {string|number} identifier - some identifier
+    //  * @param {boolean} promise
+    //  * @returns {Canceler|Promise} request cancel function, or Promise
+    //  */
+    // start(identifier?: string, promise?: boolean): Canceler<T>;
 }
 
-declare class ApiRequestConfig {
+export type ApiRequestConfig<ResponseData> = {
     axios: AxiosInstance;
-    validateFunc: ValidateResponseFunc;
+    validateFunc: ValidateResponseFunc<ResponseData>;
 }
 
-export interface ApiConnector {
-    (axiosConfigs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
+export interface ApiConnector<ApiResponseData = any> {
+    (axiosConfigs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc<ApiResponseData>)
+        : ApiConnector<ApiResponseData>;
 
-    validateFunc: ValidateResponseFunc;
+    validateFunc: ValidateResponseFunc<ApiResponseData>;
     axios: AxiosInstance;
 
     /**
      * Creates GET request.
      *
-     * @param {string} url - API endpoint url
-     * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param url - API endpoint url
+     * @param params - request uri parameters
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    reqGet(url: string, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    reqGet<ResponseData = ApiResponseData>(
+        url: string,
+        params?: any,
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 
     /**
      * Creates POST request.
      *
-     * @param {string} url - API endpoint url
-     * @param {{}} data - request body data
-     * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param url - API endpoint url
+     * @param data - request body data
+     * @param params - request uri parameters
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    reqPost(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    reqPost<ResponseData = ApiResponseData>(
+        url: string,
+        data?: any,
+        params?: any,
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 
     /**
      * Creates PATCH request.
      *
-     * @param {string} url - API endpoint url
-     * @param {{}} data - request body data
-     * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param url - API endpoint url
+     * @param data - request body data
+     * @param params - request uri parameters
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    reqPatch(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    reqPatch<ResponseData = ApiResponseData>(
+        url: string,
+        data?: any,
+        params?: any,
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 
     /**
      * Creates PUT request.
      *
-     * @param {string} url - API endpoint url
-     * @param {{}} data - request body data
-     * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param url - API endpoint url
+     * @param data - request body data
+     * @param params - request uri parameters
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    reqPut(url: string, data?: any, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    reqPut<ResponseData = ApiResponseData>(
+        url: string,
+        data?: any,
+        params?: any,
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 
     /**
      * Creates DELETE request.
      *
-     * @param {string} url - API endpoint url
-     * @param {{}} params - request uri parameters
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param url - API endpoint url
+     * @param params - request uri parameters
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    reqDelete(url: string, params?: any, axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    reqDelete<ResponseData = ApiResponseData>(
+        url: string,
+        params?: any,
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 
     /**
      * Creates ApiRequest
      *
-     * @param {AxiosRequestConfig} axiosConfigs - Axios request configuration
-     * @param {ApiRequestConfig} apiConfigs - Axios request configuration
-     * @returns {ApiRequest} request promise
+     * @param axiosConfigs - Axios request configuration
+     * @param apiConfigs - Axios request configuration
      */
-    request(axiosConfigs?: AxiosRequestConfig, apiConfigs?: ApiRequestConfig): ApiRequest;
+    request<ResponseData = ApiResponseData>(
+        axiosConfigs?: AxiosRequestConfig,
+        apiConfigs?: ApiRequestConfig<ResponseData>
+    ): ApiRequest<AxiosResponse<ResponseData>>;
 }
 
-interface ApiConnectorStatic extends ApiConnector {
-    create(axiosConfigs?: AxiosRequestConfig, validateFunc?: ValidateResponseFunc): ApiConnector;
+export interface ApiConnectorStatic extends ApiConnector {
+    create<ResponseData = any>(
+        axiosConfigs?: AxiosRequestConfig,
+        validateFunc?: ValidateResponseFunc<ResponseData>
+    ): ApiConnector<ResponseData>;
 }
 
 declare const Default: ApiConnectorStatic;
