@@ -29,7 +29,7 @@ Create `GET` request without a promise:
 ```js
 ApiConnector.reqGet('https://example.com')
             .onOk(response => console.log(response))
-            .start('', false);
+            .startQuietly();
 ```
 Combine both:
 ```js
@@ -43,9 +43,8 @@ As you can see in the example above there are two ApiRequest modes:
 + **simple** - based purely on callbacks;
 + **promised** - returns a Promise that will be resolved with the result of the last `onOk` handler 
 or rejected with the result of the last `onFail`/`onCancel`/`onError` handler.  
-
-By default all requests are **promised**. 
-To start a **simple** request call the `start`/`startSingle` method with the `promise` parameter set to `false`.
+  
+To start a **simple** request call the `startQuietly`/`startSingleQuietly` methods.
 
 Example:
 ```js
@@ -56,10 +55,10 @@ const request = ApiConnector.reqGet('https://example.com')
 await request.start()
 
 // start a simple ApiRequest:
-request.start('', false);
+request.startQuietly();
 
 // start a simple ApiRequest and then convert it to promised:
-request.start('', false);
+request.startQuietly();
 await request.genPromise();
 ```
 
@@ -230,11 +229,11 @@ const request = ApiConnector.reqGet('http://localhost')
 setTimeout(() => request.cancel(), 100);
 request.start();
 ```
-`start`/`startSingle` methods returns Axios request cancellation functions when `promise` parameter is set to `false`:
+`startQuietly`/`startSingleQuietly` methods returns Axios request cancellation functions:
 ```js
 const cancel = ApiConnector.reqGet('http://localhost')
                            .onCancel(() => console.log('Cancelled'))
-                           .start('', false);
+                           .startQuietly();
 cancel();
 ```
 
@@ -276,10 +275,10 @@ const SDK = {
 }; // 4.
 
 try {
-    const users = SDK.getUsers();
+    const users = await SDK.getUsers();
     console.log('Total users count: ', users.length);
-    
-    SDK.deleteUser('John');
+
+    await SDK.deleteUser('John');
 } catch (e) {
     if (e.isFail) {
       console.log(e.data);
@@ -322,10 +321,9 @@ These methods just calls `.request` method, e.g, `.reqPost` is equal to `ApiConn
 
 ### ApiRequest API
 
-#### start(identifier='', promise=true)
+#### start(identifier='')
 Performs http request.
-Returns Canceler function if `promise` is set to false.
-Otherwise returns a Promise:
+Returns a Promise:
 + `onOk` event will resolve the Promise with a data returned by the last `onOk` handler.
 + `onFail` event will reject the Promise with the following Error: 
     ```js
@@ -343,7 +341,7 @@ Otherwise returns a Promise:
      ```
 + `onError` event will reject the Promise with the result of the last `onError` callback.
 
-#### startSingle(identifier='', promise=true)
+#### startSingle(identifier='')
 Similar to `start` method but cancels previous pending requests with the same *method*, *url* and *identifier*.
 
 #### .on* event callbacks
